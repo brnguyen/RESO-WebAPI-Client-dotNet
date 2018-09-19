@@ -12,7 +12,7 @@ namespace ODataValidator.Rule
     using Newtonsoft.Json.Linq;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
-    
+
     #endregion
 
     /// <summary>
@@ -102,7 +102,14 @@ namespace ODataValidator.Rule
             if (feed != null && JTokenType.Object == feed.Type)
             {
                 var entities = JsonParserHelper.GetEntries(feed);
-                string propVal = entities[0][primitivePropName].ToString();
+
+                string propVal = "";
+                foreach (var entity in entities)
+                {
+                    propVal = entity[primitivePropName].ToString();
+                    if (!string.IsNullOrEmpty(propVal))
+                        break;
+                }
 
                 #region Equal operation on filter.
                 bool? isEqualOpValidation = null;
