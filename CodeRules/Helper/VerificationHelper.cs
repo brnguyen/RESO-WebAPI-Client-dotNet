@@ -14,7 +14,7 @@ namespace ODataValidator.Rule.Helper
     using System.Xml.XPath;
     using Newtonsoft.Json.Linq;
     using ODataValidator.RuleEngine;
-    
+
 
     #endregion
 
@@ -674,7 +674,7 @@ namespace ODataValidator.Rule.Helper
         public static bool VerifyMediaStream(ServiceContext context, out ExtensionRuleViolationInfo info)
         {
             bool result = false;
-            string mediaStreamURL = MetadataHelper.GenerateMediaStreamURL(context.MetadataDocument, context.ServiceDocument, context.ServiceBaseUri.AbsoluteUri);
+            string mediaStreamURL = MetadataHelper.GenerateMediaStreamURL(context.MetadataDocument, context.ServiceDocument, context.ServiceBaseUri.AbsoluteUri, context.RequestHeaders);
             ExtensionRuleResultDetail detail = new ExtensionRuleResultDetail();
 
             if (string.IsNullOrEmpty(mediaStreamURL))
@@ -1926,7 +1926,7 @@ namespace ODataValidator.Rule.Helper
             }
 
             List<string> derivedTypeFullNames = typeFullName.GetDerivedTypeFullNames();
-            if(null != derivedTypeFullNames && derivedTypeFullNames.Any())
+            if (null != derivedTypeFullNames && derivedTypeFullNames.Any())
             {
                 if (derivedTypeFullNames.Contains(typeCastSegment))
                 {
@@ -1957,7 +1957,7 @@ namespace ODataValidator.Rule.Helper
             {
                 return result;
             }
-            
+
             string typeShortName = typeFullName.GetLastSegment();
             string @namespace = typeFullName.RemoveEnd("." + typeShortName);
             var metadata = XElement.Parse(ServiceStatus.GetInstance().MetadataDocument);

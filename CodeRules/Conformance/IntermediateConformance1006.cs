@@ -14,7 +14,7 @@ namespace ODataValidator.Rule
     using Newtonsoft.Json.Linq;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
-    
+
     #endregion
 
     /// <summary>
@@ -69,7 +69,7 @@ namespace ODataValidator.Rule
                 throw new ArgumentNullException("context");
             }
 
-            bool? passed = null; 
+            bool? passed = null;
             info = null;
             var serviceStatus = ServiceStatus.GetInstance();
             var detail = new ExtensionRuleResultDetail(this.Name);
@@ -115,7 +115,9 @@ namespace ODataValidator.Rule
             }
 
             url = string.Format("{0}/{1}/$value", entryUrl, propNames[0]);
-            response = WebHelper.Get(WebRequest.Create(url), RuleEngineSetting.Instance().DefaultMaximumPayloadSize);
+            //response = WebHelper.Get(WebRequest.Create(url), RuleEngineSetting.Instance().DefaultMaximumPayloadSize);
+            response = WebHelper.Get(new Uri(url), Constants.V4AcceptHeaderJsonFullMetadata, RuleEngineSetting.Instance().DefaultMaximumPayloadSize, null);
+
             detail = new ExtensionRuleResultDetail(this.Name, url, HttpMethod.Get, string.Empty, response);
 
             // Get the value of propNames[0] property in entry payload and verify whether this value is equal to /$value payload value.
