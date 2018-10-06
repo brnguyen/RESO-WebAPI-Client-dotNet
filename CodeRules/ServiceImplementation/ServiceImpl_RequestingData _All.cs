@@ -12,7 +12,7 @@ namespace ODataValidator.Rule
     using Newtonsoft.Json.Linq;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
-    
+
     #endregion
 
     /// <summary>
@@ -92,10 +92,14 @@ namespace ODataValidator.Rule
 
             bool? passed = null;
 
-            Response resp = WebHelper.Get(new Uri(context.ServiceBaseUri + "/$all"), Constants.AcceptHeaderJson, 
+            Response resp = WebHelper.Get(new Uri(context.ServiceBaseUri + "/$all"), Constants.AcceptHeaderJson,
                 RuleEngineSetting.Instance().DefaultMaximumPayloadSize, context.RequestHeaders);
 
-            ExtensionRuleResultDetail detail = new ExtensionRuleResultDetail(this.Name, context.ServiceBaseUri + "/$all",
+            //Data is being loaded continuously in real time.  Thus we need a common timestamp for separate filters to match up
+            string commonFilter = "?$filter=ModificationTimestamp le " + DateTime.UtcNow.ToString("s");
+
+            ExtensionRuleResultDetail detail = new ExtensionRuleResultDetail(this.Name, context.ServiceBaseUri + "/$all"
+                + commonFilter,
                 HttpMethod.Get, context.RequestHeaders.ToString());
             info = new ExtensionRuleViolationInfo(context.Destination, context.ResponsePayload, detail);
 
@@ -109,7 +113,7 @@ namespace ODataValidator.Rule
 
             if (allFeed == null || JTokenType.Object != allFeed.Type)
             {
-                
+
                 return passed = false;
             }
 
@@ -121,11 +125,11 @@ namespace ODataValidator.Rule
             foreach (string entitySetUrl in entitySetURLs)
             {
                 string entityTypeShortName = entitySetUrl.MapEntitySetNameToEntityTypeShortName();
-                Tuple<string,string> key = MetadataHelper.GetKeyProperty(entityTypeShortName);
+                Tuple<string, string> key = MetadataHelper.GetKeyProperty(entityTypeShortName);
 
-                resp = WebHelper.Get(new Uri(context.ServiceBaseUri + "/" + entitySetUrl), 
+                resp = WebHelper.Get(new Uri(context.ServiceBaseUri + "/" + entitySetUrl + commonFilter),
                     Constants.AcceptHeaderJson, RuleEngineSetting.Instance().DefaultMaximumPayloadSize, context.RequestHeaders);
-                
+
                 if (null == resp || HttpStatusCode.OK != resp.StatusCode)
                 {
                     continue;
@@ -142,7 +146,7 @@ namespace ODataValidator.Rule
                 JArray entities = JsonParserHelper.GetEntries(feed);
                 foreach (JToken entity in entities)
                 {
-                    if (!Find(allEntities, key.Item1, entity[key].ToString()))
+                    if (!Find(allEntities, key.Item1, entity[key.Item1].ToString()))
                         return passed = false;
                 }
 
@@ -151,7 +155,7 @@ namespace ODataValidator.Rule
             return passed;
         }
 
-        private bool Find(JArray array,string key,string value)
+        private bool Find(JArray array, string key, string value)
         {
             foreach (JToken element in array)
             {
