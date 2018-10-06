@@ -10,7 +10,7 @@ namespace ODataValidator.Rule
     using System.ComponentModel.Composition;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
-    
+
     #endregion
 
     /// <summary>
@@ -93,8 +93,12 @@ namespace ODataValidator.Rule
                 entityUrl = entityUrls.Value.First();
             }
 
-            string relativeUrl = new Uri(entityUrl).LocalPath;
-            string host = entityUrl.Remove(entityUrl.IndexOf(relativeUrl));
+            //to allow handling of paths where the 'odata' path could be at a deeper segment eg. https://server.com/api/odata instead of https://server.com/odata
+            string baseServerPath = context.DestinationBasePath.Substring(0,
+                    context.DestinationBasePath.IndexOf(context.DestinationBaseLastSegment) - 1);
+
+            string relativeUrl = entityUrl.Replace(baseServerPath, "");
+            string host = entityUrl.Remove(entityUrl.IndexOf(relativeUrl)).Remove(0, entityUrl.IndexOf("://") + 3);
 
             string format1Request = string.Format(@"
 --batch_36522ad7-fc75-4b56-8c71-56071383e77b
