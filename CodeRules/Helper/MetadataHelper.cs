@@ -1713,7 +1713,8 @@ namespace ODataValidator.Rule.Helper
         /// <param name="svcDoc">The service document.</param>
         /// <param name="svcDocUrl">The service document URL.</param>
         /// <returns>The URL of media stream property.</returns>
-        public static string GenerateMediaStreamURL(string metadata, string svcDoc, string svcDocUrl)
+        public static string GenerateMediaStreamURL(string metadata, string svcDoc, string svcDocUrl,
+            ServiceContext context)
         {
             string mediaStreamUrl = string.Empty;
             var payloadFormat = svcDoc.GetFormatFromPayload();
@@ -1728,7 +1729,8 @@ namespace ODataValidator.Rule.Helper
                 {
                     string entityUrl = string.Empty;
                     string feedUrl = svcDocUrl.TrimEnd('/') + @"/" + feed + @"/?$top=1";
-                    var response = WebHelper.Get(new Uri(feedUrl), Constants.V4AcceptHeaderJsonFullMetadata, RuleEngineSetting.Instance().DefaultMaximumPayloadSize, null);
+                    var response = WebHelper.Get(new Uri(feedUrl), Constants.V4AcceptHeaderJsonFullMetadata, RuleEngineSetting.Instance().DefaultMaximumPayloadSize, 
+                        context.ForceAuthOnAllEndpoints? context.RequestHeaders : null);
 
                     if (response != null && response.StatusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(response.ResponsePayload))
                     {

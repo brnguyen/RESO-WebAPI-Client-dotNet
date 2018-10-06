@@ -85,7 +85,8 @@ namespace ODataValidator.RuleEngine
             IEnumerable<KeyValuePair<string, string>> reqHeaders,
             ODataMetadataType odataMetadata = ODataMetadataType.MinOnly,
             string jsonFullmetadataPayload = null,
-            string category = "core")
+            string category = "core",
+            bool forceAuthOnAllEndpoints = false)
         {
             if (destination == null)
             {
@@ -121,6 +122,7 @@ namespace ODataValidator.RuleEngine
             this.IsOffline = offline;
             this.RequestHeaders = reqHeaders;
             this.Category = category;
+            this.ForceAuthOnAllEndpoints = forceAuthOnAllEndpoints;
             this.ServiceType = ConformanceServiceType.ReadWrite;
             this.LevelTypes = new ConformanceLevelType[] { ConformanceLevelType.Minimal };
             if (category.Contains(";"))
@@ -425,6 +427,13 @@ namespace ODataValidator.RuleEngine
         public string VocCore { get; private set; }
 
         public string VocMeasures { get; private set; }
+
+
+
+        /// <summary>
+        /// Some API don't expose any endpoints to the public without authentication.
+        /// </summary>
+        public bool ForceAuthOnAllEndpoints { get; set; } = false;
 
         /// <summary>
         /// Cache the Service verification result for some functions

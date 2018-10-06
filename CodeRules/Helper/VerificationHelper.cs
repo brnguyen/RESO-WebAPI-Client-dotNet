@@ -674,7 +674,7 @@ namespace ODataValidator.Rule.Helper
         public static bool VerifyMediaStream(ServiceContext context, out ExtensionRuleViolationInfo info)
         {
             bool result = false;
-            string mediaStreamURL = MetadataHelper.GenerateMediaStreamURL(context.MetadataDocument, context.ServiceDocument, context.ServiceBaseUri.AbsoluteUri);
+            string mediaStreamURL = MetadataHelper.GenerateMediaStreamURL(context.MetadataDocument, context.ServiceDocument, context.ServiceBaseUri.AbsoluteUri, context);
             ExtensionRuleResultDetail detail = new ExtensionRuleResultDetail();
 
             if (string.IsNullOrEmpty(mediaStreamURL))

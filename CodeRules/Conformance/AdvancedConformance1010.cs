@@ -5,7 +5,9 @@ namespace ODataValidator.Rule
 {
     #region Namespaces
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel.Composition;
+    using System.Net;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
     #endregion
@@ -64,10 +66,47 @@ namespace ODataValidator.Rule
 
             bool? passed = null;
             info = null;
-            VerificationHelper.VerifySearch(context, out passed, out info);
-            if (info != null)
+            if (!context.ForceAuthOnAllEndpoints)
             {
-                info.SetDetailsName(this.Name);
+                VerificationHelper.VerifySearch(context, out passed, out info);
+                if (info != null)
+                {
+                    info.SetDetailsName(this.Name);
+                }
+            } else
+            {
+                List<ExtensionRuleResultDetail> details = new List<ExtensionRuleResultDetail>();
+                ExtensionRuleResultDetail detail1 = new ExtensionRuleResultDetail(this.Name);
+
+                var filterRestrictions = AnnotationsHelper.GetFilterRestrictions(context.MetadataDocument, context.VocCapabilities);
+
+                if (string.IsNullOrEmpty(filterRestrictions.Item1))
+                {
+                    detail1.ErrorMessage = "Cannot find an appropriate entity-set which supports $filter system query options in the service.";
+                    info = new ExtensionRuleViolationInfo(context.Destination, context.ResponsePayload, detail1);
+
+                    return passed;
+                }
+
+                string entitySet = filterRestrictions.Item1;
+
+                string url = string.Format("{0}/{1}", context.ServiceBaseUri, entitySet);
+                var resp = WebHelper.Get(new Uri(url), Constants.AcceptHeaderJson, RuleEngineSetting.Instance().DefaultMaximumPayloadSize, context.RequestHeaders);
+                detail1 = new ExtensionRuleResultDetail(this.Name, url, "GET", StringHelper.MergeHeaders(Constants.AcceptHeaderJson, context.RequestHeaders), resp);
+                details.Add(detail1);
+
+                if (null == resp || HttpStatusCode.OK != resp.StatusCode)
+                {
+                    detail1.ErrorMessage = JsonParserHelper.GetErrorMessage(resp.ResponsePayload);
+                    info = new ExtensionRuleViolationInfo(context.Destination, context.ResponsePayload, detail1);
+                    passed = false;
+                }
+                else
+                {
+                    details.Insert(0, detail1);
+                    info = new ExtensionRuleViolationInfo(context.Destination, context.ResponsePayload, details);
+                    passed = true;
+                }
             }
 
             return passed;

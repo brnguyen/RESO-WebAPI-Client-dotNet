@@ -1016,7 +1016,9 @@ namespace RESOReference
                 Uri service = GetUri(clientsettings.GetSetting(settings.webapi_uri));
                 ServiceStatus intservice = ServiceStatus.GetInstance(clientsettings.GetSetting(settings.webapi_uri), reqHeadersString);
                 ServiceStatus.ReviseMetadata(metadataresponse);
-                ServiceContext ctx = new ServiceContext(url, JobID, HttpStatusCode.OK, reqHeadersString, metadataresponse, string.Empty, service, serviceresponse, metadataresponse, false, reqHeaders, ODataMetadataType.MinOnly);
+                bool forceAuthOnAllEndpoints = clientproperties.getProperty("ForceAuthOnAllEndpoints") == "true";
+                ServiceContext ctx = new ServiceContext(url, JobID, HttpStatusCode.OK, reqHeadersString, metadataresponse, string.Empty, service, serviceresponse, metadataresponse, false, reqHeaders, ODataMetadataType.MinOnly,
+                    forceAuthOnAllEndpoints: forceAuthOnAllEndpoints);
 
 
                 finderror = 2;
