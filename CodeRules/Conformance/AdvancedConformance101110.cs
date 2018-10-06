@@ -7,7 +7,7 @@ namespace ODataValidator.Rule
     using Newtonsoft.Json.Linq;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
-    
+
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.Composition;
@@ -117,7 +117,7 @@ GET {0} HTTP/1.1
 
             if (batchResponse != null && !string.IsNullOrEmpty(batchResponse.ResponsePayload))
             {
-                string[] responseSegments = batchResponse.ResponsePayload.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] responseSegments = batchResponse.ResponsePayload.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (string seg in responseSegments)
                 {
