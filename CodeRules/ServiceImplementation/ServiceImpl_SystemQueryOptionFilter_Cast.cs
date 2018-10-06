@@ -11,7 +11,7 @@ namespace ODataValidator.Rule
     using Newtonsoft.Json.Linq;
     using ODataValidator.Rule.Helper;
     using ODataValidator.RuleEngine;
-    
+
     #endregion
 
     /// <summary>
@@ -96,7 +96,7 @@ namespace ODataValidator.Rule
             var svcStatus = ServiceStatus.GetInstance();
             string entityTypeShortName;
             var propNames = MetadataHelper.GetNumericPropertyNames(out entityTypeShortName);
-            string propName = propNames[0];
+            string propName = "";
             string entitySetUrl = entityTypeShortName.GetAccessEntitySetURL();
             if (string.IsNullOrEmpty(entitySetUrl))
             {
@@ -109,8 +109,22 @@ namespace ODataValidator.Rule
             {
                 JObject jObj = JObject.Parse(resp.ResponsePayload);
                 JArray jArr = jObj.GetValue(Constants.Value) as JArray;
-                var entity = jArr.First as JObject;
-                string propVal = entity[propName].ToString();
+
+                //Find non-null propVal
+                string propVal = "";
+                foreach (string pn in propNames)
+                {
+                    propName = pn;
+                    foreach (JObject entity in jArr)
+                    {
+                        propVal = entity[propName].ToString();
+                        if (propVal != "")
+                            break;
+                    }
+                    if (propVal != "")
+                        break;
+                }
+
                 url = string.Format("{0}?$filter=cast({1}, 'Edm.String') eq '{2}'", url, propName, propVal);
                 resp = WebHelper.Get(new Uri(url), string.Empty, RuleEngineSetting.Instance().DefaultMaximumPayloadSize, svcStatus.DefaultHeaders);
                 var detail = new ExtensionRuleResultDetail(this.Name, url, HttpMethod.Get, string.Empty);
